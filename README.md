@@ -31,12 +31,12 @@ Our NFT Marketplace DApp provides a decentralized marketplace where creators can
 
 #### NodeJs & NPM Version
 
-```
+<!-- ```
   NodeJs: v18.12.1
   NPM: 8.19.2
   URL: https://nodejs.org/en/download
   VIDEO: https://youtu.be/PIR0oBVowXU?si=_jVYKmd94tPjmuQR
-```
+``` -->
 
 #### Pinata
 

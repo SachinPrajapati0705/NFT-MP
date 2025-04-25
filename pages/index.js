@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useMemo } from "react";
 
 //INTERNAL IMPORT
 import Style from "../styles/index.module.css";
@@ -47,8 +47,7 @@ const Home = () => {
   }, [currentAccount]);
 
   //CREATOR LIST
-
-  const creators = getTopCreators(nfts);
+  const creators = useMemo(() => getTopCreators(nfts), [nfts]);
   // console.log(creators);
 
   return (
@@ -61,7 +60,7 @@ const Home = () => {
         paragraph="Discover the most outstanding NFTs in all topics of life."
       />
       <AudioLive />
-      {creators.length == 0 ? (
+      {!creators || creators.length == 0 ? (
         <Loader />
       ) : (
         <FollowerTab TopCreator={creators} />
@@ -74,7 +73,7 @@ const Home = () => {
         paragraph="Discover the most outstanding NFTs in all topics of life."
       />
       <Filter />
-      {nfts.length == 0 ? <Loader /> : <NFTCard NFTData={nfts} />}
+      {!nfts || nfts.length == 0 ? <Loader /> : <NFTCard NFTData={nfts} />}
 
       <Title
         heading="Browse by category"

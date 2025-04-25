@@ -15,14 +15,18 @@
   "dependencies": {
     "@openzeppelin/contracts": "^4.7.3",
     "axios": "^0.27.2",
+    "canvas": "^3.1.0",
     "dotenv": "^16.4.7",
     "ether": "^0.0.9",
+    "file-loader": "^6.2.0",
     "framer-motion": "^7.2.1",
     "next": "12.2.5",
+    "pdfjs-dist": "^3.11.174",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-dropzone": "^14.2.2",
     "react-icons": "^4.4.0",
+    "react-pdf": "^7.7.0",
     "web3modal": "^1.9.9"
   },
   "devDependencies": {

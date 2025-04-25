@@ -1,0 +1,48 @@
+import React, { useEffect } from 'react';
+import Style from './PDFViewer.module.css';
+
+const PDFViewer = ({ pdfUrl, onClose }) => {
+  // Lock scroll when modal opens
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    
+    // Cleanup function
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
+  // Handle close button click
+  const handleCloseClick = (e) => {
+    e.stopPropagation();
+    onClose();
+  };
+
+  // Prevent event bubbling on modal content
+  const handleContentClick = (e) => {
+    e.stopPropagation();
+  };
+
+  return (
+    <div className={Style.modal_overlay} onClick={onClose}>
+      <div className={Style.modal_content} onClick={handleContentClick}>
+        <button 
+          className={Style.close_button}
+          onClick={handleCloseClick}
+          aria-label="Close"
+        >
+          ×
+        </button>
+        <iframe
+          src={pdfUrl}
+          title="PDF viewer"
+          className={Style.pdf_frame}
+          sandbox="allow-same-origin allow-scripts allow-forms"
+        />
+      </div>
+    </div>
+  );
+};
+
+export default PDFViewer; 

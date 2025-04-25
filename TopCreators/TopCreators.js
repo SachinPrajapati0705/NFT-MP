@@ -1,6 +1,11 @@
 export const getTopCreators = (creators) => {
   const finalCreators = [];
 
+  // Check if creators is defined and is an array
+  if (!creators || !Array.isArray(creators) || creators.length === 0) {
+    return finalCreators;
+  }
+
   const finalResults = creators.reduce((index, currentValue) => {
     (index[currentValue.seller] = index[currentValue.seller] || []).push(
       currentValue

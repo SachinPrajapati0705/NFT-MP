@@ -620,8 +620,8 @@
       "artifacts": []
     },
     "D:\\Main2\\NFT-MARKETPLACE\\contracts\\NFTMarketplace.sol": {
-      "lastModificationDate": 1739258815185,
-      "contentHash": "eacee67cd19174aa22c41255f5ebf01f",
+      "lastModificationDate": 1745568914641,
+      "contentHash": "543dbf6d3d0ed5b17351b248861466f2",
       "sourceName": "contracts/NFTMarketplace.sol",
       "solcConfig": {
         "version": "0.8.19",

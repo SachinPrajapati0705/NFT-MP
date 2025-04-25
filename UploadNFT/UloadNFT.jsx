@@ -12,6 +12,7 @@ import formStyle from "../AccountPage/Form/Form.module.css";
 import images from "../img";
 import { Button } from "../components/componentsindex.js";
 import { DropZone } from "../UploadNFT/uploadNFTIndex.js";
+import { PDFViewer } from "../components/componentsindex.js";
 
 const UloadNFT = ({ uploadToIPFS, createNFT, uploadToPinata }) => {
   const [price, setPrice] = useState("");
@@ -24,8 +25,17 @@ const UloadNFT = ({ uploadToIPFS, createNFT, uploadToPinata }) => {
   const [category, setCategory] = useState(0);
   const [properties, setProperties] = useState("");
   const [image, setImage] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   const router = useRouter();
+
+  const handlePreview = () => {
+    if (!image) {
+      alert("Please upload a file first");
+      return;
+    }
+    setShowPreview(true);
+  };
 
   const categoryArry = [
     {
@@ -57,7 +67,7 @@ const UloadNFT = ({ uploadToIPFS, createNFT, uploadToPinata }) => {
   return (
     <div className={Style.upload}>
       <DropZone
-        title="JPG, PNG, WEBM , MAX 100MB"
+        title="JPG, PNG, WEBM, PDF , MAX 100MB"
         heading="Drag & drop file"
         subHeading="or Browse media on your device"
         name={name}
@@ -72,12 +82,38 @@ const UloadNFT = ({ uploadToIPFS, createNFT, uploadToPinata }) => {
         uploadToPinata={uploadToPinata}
       />
 
+      {showPreview && image && (
+        <div className={Style.preview_modal}>
+          <div className={Style.preview_overlay} onClick={() => setShowPreview(false)}>
+            <div className={Style.preview_content} onClick={(e) => e.stopPropagation()}>
+              <h2>NFT Preview</h2>
+              <div className={Style.preview_details}>
+                <h3>{name || "Untitled NFT"}</h3>
+                <p>{description || "No description provided"}</p>
+                <p>Price: {price || "Not set"} ETH</p>
+                <p>Royalties: {royalties || "0"}%</p>
+                <div className={Style.preview_image}>
+                  {image?.toLowerCase().endsWith('.pdf') ? (
+                    <PDFViewer pdfUrl={image} onClose={() => setShowPreview(false)} />
+                  ) : (
+                    <img src={image} alt="NFT Preview" />
+                  )}
+                </div>
+              </div>
+              <button className={Style.close_preview} onClick={() => setShowPreview(false)}>
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className={Style.upload_box}>
         <div className={formStyle.Form_box_input}>
           <label htmlFor="nft">Item Name</label>
           <input
             type="text"
-            placeholder="shoaib bhai"
+            placeholder="Yash"
             className={formStyle.Form_box_input_userName}
             onChange={(e) => setName(e.target.value)}
           />
@@ -221,18 +257,13 @@ const UloadNFT = ({ uploadToIPFS, createNFT, uploadToPinata }) => {
                 image,
                 description,
                 router
-                // website,
-                // royalties,
-                // fileSize,
-                // category,
-                // properties
               )
             }
             classStyle={Style.upload_box_btn_style}
           />
           <Button
             btnName="Preview"
-            handleClick={() => {}}
+            handleClick={handlePreview}
             classStyle={Style.upload_box_btn_style}
           />
         </div>

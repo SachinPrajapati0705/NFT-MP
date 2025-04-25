@@ -167,7 +167,7 @@ const FollowerTab = ({ TopCreator }) => {
 
       {popular && (
         <div className={Style.followerTab_box}>
-          {TopCreator.map((el, i) => (
+          {TopCreator && Array.isArray(TopCreator) && TopCreator.map((el, i) => (
             <FollowerTabCard key={i + 1} i={i} el={el} />
           ))}
         </div>

@@ -31,15 +31,44 @@ const fetchContract = (signerOrProvider) =>
 
 const connectingWithSmartContract = async () => {
   try {
+    if (!window.ethereum) {
+      console.error("No Ethereum wallet found. Please install MetaMask.");
+      throw new Error("No Ethereum wallet found. Please install MetaMask.");
+    }
+    
+    // First try to switch to the correct network
+    try {
+      await handleNetworkSwitch();
+    } catch (networkError) {
+      console.error("Failed to switch network:", networkError);
+      throw new Error("Failed to switch to the correct network. Please switch manually.");
+    }
+    
     const web3Modal = new Web3Modal();
     const connection = await web3Modal.connect();
     const provider = new ethers.providers.Web3Provider(connection);
+    
+    // Verify we're on the correct network
+    const network = await provider.getNetwork();
+    console.log("Connected to network:", network.name, "Chain ID:", network.chainId);
+    
     const signer = provider.getSigner();
-
     const contract = fetchContract(signer);
+    
+    // Verify the contract exists at the specified address
+    try {
+      // Call a simple view function to verify the contract exists
+      await contract.getListingPrice();
+      console.log("Contract successfully connected at address:", NFTMarketplaceAddress);
+    } catch (contractVerifyError) {
+      console.error("Contract verification failed:", contractVerifyError);
+      throw new Error("Contract not found at the specified address. Please check your configuration.");
+    }
+    
     return contract;
   } catch (error) {
     console.log("Something went wrong while connecting with contract", error);
+    throw error;
   }
 };
 
@@ -196,53 +225,108 @@ export const NFTMarketplaceProvider = ({ children }) => {
 
   const fetchNFTs = async () => {
     try {
+      if (!window.ethereum) {
+        setError("Please install MetaMask to interact with this marketplace");
+        setOpenError(true);
+        return [];
+      }
+
+      // Check and switch to correct network
+      try {
+        await handleNetworkSwitch();
+      } catch (networkError) {
+        console.error("Network switch failed:", networkError);
+        setError("Failed to switch to the correct network. Please switch manually.");
+        setOpenError(true);
+        return [];
+      }
+
       const address = await checkIfWalletConnected();
-      if (address) {
+      if (!address) {
+        console.log("No wallet connected");
+        setError("Please connect your wallet first");
+        setOpenError(true);
+        return [];
+      }
+
+      try {
         const web3Modal = new Web3Modal();
         const connection = await web3Modal.connect();
         const provider = new ethers.providers.Web3Provider(connection);
-
+        
+        // Check chain ID to ensure connected to correct network
+        const network = await provider.getNetwork();
+        console.log("Connected to network:", network.name, "Chain ID:", network.chainId);
+        
         const contract = fetchContract(provider);
+        console.log("Contract address:", NFTMarketplaceAddress);
+        console.log("Fetching market items...");
+        
+        // Add try/catch specifically for the contract call
+        try {
+          const data = await contract.fetchMarketItems();
+          console.log("Market items:", data);
 
-        const data = await contract.fetchMarketItems();
+          const items = await Promise.all(
+            data.map(
+              async ({ tokenId, seller, owner, price: unformattedPrice }) => {
+                try {
+                  const tokenURI = await contract.tokenURI(tokenId);
+                  console.log("Token URI for ID", tokenId.toString(), ":", tokenURI);
 
-        console.log(data);
+                  const {
+                    data: { image, name, description },
+                  } = await axios.get(tokenURI, {});
+                  const price = ethers.utils.formatUnits(
+                    unformattedPrice.toString(),
+                    "ether"
+                  );
 
-        const items = await Promise.all(
-          data.map(
-            async ({ tokenId, seller, owner, price: unformattedPrice }) => {
-              const tokenURI = await contract.tokenURI(tokenId);
-
-              const {
-                data: { image, name, description },
-              } = await axios.get(tokenURI, {});
-              const price = ethers.utils.formatUnits(
-                unformattedPrice.toString(),
-                "ether"
-              );
-
-              return {
-                price,
-                tokenId: tokenId.toNumber(),
-                seller,
-                owner,
-                image,
-                name,
-                description,
-                tokenURI,
-              };
-            }
-          )
-        );
-        console.log("NFT", items);
-        return items;
+                  return {
+                    price,
+                    tokenId: tokenId.toNumber(),
+                    seller,
+                    owner,
+                    image,
+                    name,
+                    description,
+                    tokenURI,
+                  };
+                } catch (itemError) {
+                  console.error("Error processing NFT item:", itemError);
+                  return null;
+                }
+              }
+            )
+          );
+          
+          // Filter out any null items from errors
+          const validItems = items.filter(item => item !== null);
+          console.log("Valid NFTs:", validItems);
+          return validItems;
+        } catch (contractCallError) {
+          console.error("Contract call error:", contractCallError);
+          
+          // Check if the error might be due to the contract not being deployed on this network
+          if (contractCallError.code === 'CALL_EXCEPTION') {
+            setError("Contract call failed. Please ensure you're connected to the correct network where the contract is deployed.");
+          } else {
+            setError(`Contract error: ${contractCallError.message || "Unknown contract error"}`);
+          }
+          setOpenError(true);
+          return [];
+        }
+      } catch (contractError) {
+        console.error("Contract interaction error:", contractError);
+        setError(`Contract error: ${contractError.message || "Unknown contract error"}`);
+        setOpenError(true);
+        return [];
       }
-
-      // }
     } catch (error) {
-      setError("Error while fetching NFTS");
+      console.error("Error in fetchNFTs:", error);
+      setError(`Error while fetching NFTS: ${error.message || "Unknown error"}`);
       setOpenError(true);
-      console.log(error);
+      return [];
     }
   };
 

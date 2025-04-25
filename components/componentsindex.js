@@ -18,6 +18,7 @@ import Brand from "./Brand/Brand";
 import Video from "./Video/Video";
 import Loader from "./Loader/Loader";
 import Error from "./Error/Error";
+import PDFViewer from "./PDFViewer/PDFViewer";
 
 export {
   Button,
@@ -40,4 +41,5 @@ export {
   Video,
   Loader,
   Error,
+  PDFViewer,
 };
